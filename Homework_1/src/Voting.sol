@@ -6,7 +6,6 @@ import {Staking} from "src/Stacking.sol";
 import {VoteResultNFT} from "src/Result_NFT.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 
-
 contract VotingSystem is Ownable {
     struct VoteSession {
         uint256 id;
