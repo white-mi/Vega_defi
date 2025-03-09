@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.23;
 
-import {VegaVoteToken} from "src/VegaVoteToken.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {VegaVoteToken} from "../src/VegaVoteToken.sol";
+import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 
 contract Staking is ReentrancyGuard {
     struct Stake {
@@ -44,7 +44,7 @@ contract Staking is ReentrancyGuard {
         for (uint256 i = 0; i < stakes[user].length; i++) {
             Stake memory s = stakes[user][i];
             if (!s.isWithdrawn && block.timestamp < s.startTime + s.period) {
-                totalPower += s.amount * (s.period ** 2);
+                totalPower += s.amount * (s.period ** 2)/ 1e18;
             }
         }
         return totalPower;

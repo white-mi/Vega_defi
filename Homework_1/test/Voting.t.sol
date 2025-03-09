@@ -1,55 +1,106 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.23;
 
 import {Test, console} from "forge-std/Test.sol";
 import {VegaVoteToken} from "../src/VegaVoteToken.sol";
 import {Staking} from "../src/Stacking.sol";
 import {VotingSystem} from "../src/Voting.sol";
 import {VoteResultNFT} from "../src/Result_NFT.sol";
+import {IERC721Receiver} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol";
 
-contract VotingTest is Test {
+
+
+contract VotingTest is Test, IERC721Receiver  {
     VegaVoteToken token;
+
     Staking staking;
     VoteResultNFT nft;
     VotingSystem voting;
-    address admin = address(0x123);
-    address user1 = address(0x456);
+    
+    address owner; 
+    address admin = address(0x1);
+    address user1 = address(0x2);
+    address user2 = address(0x3);
 
-    function setUp() public {
-        token = new VegaVoteToken();
-        staking = new Staking(address(token));
-        nft = new VoteResultNFT();
-        voting = new VotingSystem(address(staking), address(nft));
-
-        // Настройка стейкинга для пользователя
-        token.mint(user1, 1000);
-        vm.prank(user1);
-        token.approve(address(staking), 1000);
-        vm.prank(user1);
-        staking.stake(1000, 365 days); // votingPower = 1000 * (365*86400)^2
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external pure returns (bytes4) {
+        return this.onERC721Received.selector;
     }
 
-    function testVoteFlow() public {
+    function setUp() public {
+        owner = address(this); 
+        token = new VegaVoteToken();
+        staking = new Staking(address(token));
+        nft = new VoteResultNFT(address(this));
+        voting = new VotingSystem(address(staking), address(nft));
+        console.log(msg.sender);
+
+        voting.addAdmin(admin);
+
+        token.transfer(user1, 1000 ether);
+        token.transfer(user2, 1000 ether);
+        
+        vm.startPrank(user1);
+        token.approve(address(staking), 1000 ether);
+        staking.stake(1000 ether, 365 days);
+        vm.stopPrank();
+
+        vm.startPrank(user2);
+        token.approve(address(staking), 1000 ether);
+        staking.stake(1000 ether, 365 days);
+        vm.stopPrank();
+    }
+
+    // Тест 1: Успешное создание сессии голосования (Passed)
+    function testCreateSession() public {
+        console.logAddress(address(this));
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 hours, 1000);
+        voting.createSession("Test Vote 1", 1 days, 1000);
+    
+        (uint256 id, string memory desc,, uint256 threshold,,,) = voting.sessions(0);
+        assertEq(id, 0);
+        assertEq(threshold, 1000);
+        assertEq(keccak256(bytes(desc)), keccak256(bytes("Test Vote 1")));
+
+    }
+
+    function testVoteSuccess() public {
+        vm.prank(admin);
+        voting.createSession("Test Vote", 1 days, 1000);
 
         vm.prank(user1);
         voting.vote(0, true);
 
-        uint256 yesVotes = voting.getSessionYesVotes(0);
-        uint256 noVotes = voting.getSessionNoVotes(0);
-        assertGt(yesVotes, 0);
-        assertEq(noVotes, 0);
+        (, , , , uint256 yesVotes, ,) = voting.sessions(0);
+        console.log(yesVotes);
+        assertEq(yesVotes, 1000 * (365 days) ** 2, "Voting power mismatch");
     }
 
-    function testDeadlineFinalization() public {
+    function testAutoFinalization() public {
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 hours, 1000);
+        voting.createSession("Test Vote", 1 days, 1000 ); 
 
-        vm.warp(block.timestamp + 2 hours);
-        voting.checkDeadline(0);
-
-        bool isFinalized = voting.isSessionFinalized(0);
-        assertTrue(isFinalized);
+        vm.prank(user1);
+        voting.vote(0, true);
+        console.logAddress(owner);
+        vm.prank(admin);
+        voting.finalizeAllSessions();
+        (, , , , , , bool isFinalized) = voting.sessions(0);
+        assertTrue(isFinalized, "Voting should be finalized");
     }
+
+    function testUnstake() public {
+        vm.warp(block.timestamp+366 days);
+        vm.prank(user1);
+        staking.unstake(0);
+        console.log(token.balanceOf(user1));
+        assertEq(token.balanceOf(user1), 1000 ether);
+    }
+
+    
+
 }
