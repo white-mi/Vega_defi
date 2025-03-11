@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.23;
 
-import {VegaVoteToken} from "../src/VegaVoteToken.sol";
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
+import {IERC20Mintable} from "../src/IERC20Mintable.sol";
 
 contract Staking is ReentrancyGuard {
     struct Stake {
@@ -12,11 +12,11 @@ contract Staking is ReentrancyGuard {
         bool isWithdrawn;
     }
 
-    VegaVoteToken public token;
+    IERC20Mintable public token;
     mapping(address => Stake[]) public stakes;
 
     constructor(address _token) {
-        token = VegaVoteToken(_token);
+        token = IERC20Mintable(_token);
     }
 
     function stake(uint256 amount, uint256 period) external nonReentrant {

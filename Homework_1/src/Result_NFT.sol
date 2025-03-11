@@ -13,9 +13,9 @@ contract VoteResultNFT is ERC721, Ownable {
 
     constructor(address initialOwner) ERC721("VoteResult", "VRNFT") Ownable(initialOwner) {}
 
-    function mint(address to, string memory metadata) public {
+    function mint(address to, string memory metadata) external onlyOwner {
         uint256 tokenId = _tokenIdCounter++;
-        _safeMint(to, tokenId);
+        _mint(to, tokenId);
         _metadata[tokenId] = metadata;
     }
 

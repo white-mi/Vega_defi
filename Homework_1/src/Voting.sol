@@ -41,17 +41,17 @@ contract VotingSystem is Ownable, AccessControl, IERC721Receiver {
     event VoteResultsDistributed(uint256 sessionId, address voter, string metadata);
     event NFTReceived(address indexed contractAddress, uint256 indexed tokenId, address indexed from);
     
-    constructor(address _stakingContract, address _nft) Ownable(msg.sender) {
+    constructor(address _owner, address _stakingContract, address _nft) Ownable(_owner) {
         stakingContract = Staking(_stakingContract);
         nft = VoteResultNFT(_nft);
-        _grantRole(ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE, _owner);
     }
 
     function onERC721Received(
-        address operator,
+        address,
         address from,
         uint256 tokenId,
-        bytes calldata data
+        bytes calldata
     ) external override returns (bytes4) {
         receivedNFTs.push(ReceivedNFT({
             contractAddress: msg.sender,
@@ -146,6 +146,6 @@ contract VotingSystem is Ownable, AccessControl, IERC721Receiver {
     }
 
     function removeAdmin(address account) external onlyOwner {
-        revokeRole(ADMIN_ROLE, account);
+        _revokeRole(ADMIN_ROLE, account);
     }
 }
