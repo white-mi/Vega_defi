@@ -33,9 +33,11 @@ contract VotingTest is Test, IERC721Receiver  {
     }
 
     function setUp() public {
+        uint256 i = 5 ether;
+        console.log(i);
         owner = address(this); 
-        //token = IERC20(adress(0xD3835FE9807DAecc7dEBC53795E7170844684CeF));
-        token_contract = new VegaVoteToken();
+        token_contract = new VegaVoteToken();   //в данных тестах работаю со своим стандартным ERC20 токеном, 
+                                                //логика остается той же в сети Sepolia, благодаря использованию универсальных интерфейсов
         token = IERC20Mintable(address(token_contract));
         staking = new Staking(address(token));
         nft = new VoteResultNFT(address(this));

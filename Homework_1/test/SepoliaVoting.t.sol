@@ -27,22 +27,22 @@ contract LiveNetworkTest is Test {
         staking = Staking(STAKING_ADDRESS);
         nft = VoteResultNFT(NFT_ADDRESS);
         token = IERC20Mintable(ERC20_ADDRESS);
-        token.mint(USER1, 100000 ether);
-        token.mint(USER2, 100000 ether);
+        token.mint(USER1, 1000 ether);
+        token.mint(USER2, 1000 ether);
         vm.prank(ADMIN);
         nft.transferOwnership(address(voting));
     }
 
     function testFullWorkflow() public {
         vm.prank(USER1);
-        token.approve(STAKING_ADDRESS, 100000 ether);
+        token.approve(STAKING_ADDRESS, 1000 ether);
         
         vm.prank(USER1);
-        staking.stake(100000 ether, 365 days);
+        staking.stake(1000 ether, 365 days);
         console.log("Staked 1000 ETH for 365 days. Voting power:", staking.calculateVotingPower(USER1));
 
         vm.prank(ADMIN);
-        voting.createSession("Proposal #1", 1 days, 5 ether);
+        voting.createSession("Proposal #1", 1 days, 500 * (365 days) ** 2);
         console.log("Created session 0: 'Proposal #1'");
 
         vm.prank(USER1);
@@ -52,13 +52,10 @@ contract LiveNetworkTest is Test {
         vm.prank(ADMIN);
         voting.finalizeAllSessions();
 
-        //assertEq(nft.balanceOf(ADMIN), 1, "NFT not distributed");
-        //console.log("NFT minted to ADMIN. Balance:", nft.balanceOf(ADMIN));
         (, , , , , , bool isFinalized) = voting.sessions(0);
         assertTrue(isFinalized, "Session should be finalized");
-        //string memory uri = nft.tokenURI(0);
-        //assertTrue(stringsContains(uri, "Proposal #1"), "Wrong metadata");
-        //console.log("NFT metadata contains 'Proposal #1'");
+        assertEq(nft.balanceOf(ADMIN), 1, "NFT not distributed");
+        console.log("NFT minted to ADMIN. Balance:", nft.balanceOf(ADMIN));
         
     }
 }
