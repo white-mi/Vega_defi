@@ -114,7 +114,7 @@ contract VotingSystem is Ownable, AccessControl, IERC721Receiver {
             '}'
         ));
 
-        nft.mint(owner(), metadata);
+        nft.mint(msg.sender, metadata);
         emit VoteFinalized(sessionId, metadata);
 
         for (uint256 i = 0; i < session.voters.length; i++) {

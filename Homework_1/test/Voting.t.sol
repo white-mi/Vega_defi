@@ -154,6 +154,7 @@ contract VotingTest is Test, IERC721Receiver  {
         voting.finalizeAllSessions();
         vm.prank(admin);
         voting.finalizeAllSessions();
+        assertEq(nft.balanceOf(admin), 1, "NFT not distributed");
         (, , , , , , bool isFinalized) = voting.sessions(0);
         assertTrue(isFinalized, "Session should be finalized");
     }
