@@ -8,16 +8,21 @@
 
 1. **Staking (стейкинг)** - Управление стейкингом токенов
 2. **VotingSystem (голосование)** - Организация голосований
-3. **VoteResultNFT (NFT)** - Чеканка NFT с результатами
+3. **VoteResultNFT (NFT)** - Выпуск NFT с результатами
 
 ## Адреса в сети Sepolia
 
 ```solidity
 // Основные контракты
-address constant STAKING_ADDRESS = 0xdcd58c6028184298aA374eFC46898a5f5cd87D1c;
-address constant VOTING_ADDRESS = 0xabDFF56ce26536d73F40D46fE80B9e1C88b13e30;
-address constant NFT_ADDRESS = 0xEBc78D16D34626263d46cB443e19c86b0aB7D69D;
+address constant STAKING_ADDRESS = 0x95f853852FacBdf4a6F34D63bE6dbF864A5Ef695 ;
+address constant VOTING_ADDRESS = 0x45B5904B2180261e050B83a293d9f4D2194083b8;
+address constant NFT_ADDRESS = 0xEf947b86CF445d32D5c67d5019fada1BCA7a6af5;
 
 // Вспомогательные адреса
 address constant ERC20_ADDRESS = 0xD3835FE9807DAecc7dEBC53795E7170844684CeF; // ERC20  VegaVoteToken токен
-address constant ADMIN = 0xC4ce21C3FBA666C4EE33346b88932a7BBB4c65e2; // Администратор
+address constant ADMIN = 0xC4ce21C3FBA666C4EE33346b88932a7BBB4c65e2; // Администратор, 
+                                                                     //его приватный ключ (если нужен) можно узнать у @white_mi98
+```
+
+для тестирования в сети Sepolia :   
+forge test --match-contract LiveNetworkTest   --fork-url $RPC_URL   -vvvv

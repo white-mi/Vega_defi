@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import {Test, console} from "forge-std/Test.sol";
 import {IERC20Mintable} from "../src/IERC20Mintable.sol";
-import {Staking} from "../src/Stacking.sol";
+import {Staking} from "../src/Staking.sol";
 import {VotingSystem} from "../src/Voting.sol";
 import {VoteResultNFT} from "../src/Result_NFT.sol";
 import {IERC721Receiver} from "../lib/openzeppelin-contracts/contracts/token/ERC721/IERC721Receiver.sol";
@@ -68,11 +68,11 @@ contract VotingTest is Test, IERC721Receiver  {
     function testCreateSession() public {
         console.logAddress(address(this));
         vm.prank(admin);
-        voting.createSession("Test Vote 1", 1 days, 1000);
+        voting.createSession("Test Vote 1", 1 days, 10);
     
         (uint256 id, string memory desc,, uint256 threshold,,,) = voting.sessions(0);
         assertEq(id, 0);
-        assertEq(threshold, 1000);
+        assertEq(threshold, staking.getTotalVotingPower()/10);
         assertEq(keccak256(bytes(desc)), keccak256(bytes("Test Vote 1")));
 
     }
@@ -80,7 +80,7 @@ contract VotingTest is Test, IERC721Receiver  {
     // Тест: Проверка подсчёта VotingPower
     function testVoteSuccess() public {
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 days, 1000);
+        voting.createSession("Test Vote", 1 days, 100);
 
         vm.prank(user1);
         voting.vote(0, true);
@@ -93,9 +93,11 @@ contract VotingTest is Test, IERC721Receiver  {
     //Тест: успешное голосование с выпуском ERC721
     function testWithFinalization() public {
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 days, 1000 ); 
+        voting.createSession("Test Vote", 1 days, 100); 
 
         vm.prank(user1);
+        voting.vote(0, true);
+        vm.prank(user2);
         voting.vote(0, true);
         console.logAddress(owner);
         vm.prank(admin);
@@ -138,9 +140,9 @@ contract VotingTest is Test, IERC721Receiver  {
     function testOnlyAdminCanCreateSession() public {
         vm.prank(user1);
         vm.expectRevert();
-        voting.createSession("Test Vote", 1 days, 1000);
+        voting.createSession("Test Vote", 1 days, 10);
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 days, 1000);
+        voting.createSession("Test Vote", 1 days, 10);
         (uint256 id, , , , , , ) = voting.sessions(0);
         assertEq(id, 0, "Session should be created");
     }
@@ -148,7 +150,7 @@ contract VotingTest is Test, IERC721Receiver  {
     // Тест: Только админ имеет возможность завершать голосования
     function testOnlyAdminCanFinalizeSessions() public {
         vm.prank(admin);
-        voting.createSession("Test Vote", 1 days, 1000);
+        voting.createSession("Test Vote", 1 days, 50);
         vm.prank(user1);
         voting.vote(0, false);
         vm.prank(user1);

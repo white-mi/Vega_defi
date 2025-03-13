@@ -3,7 +3,7 @@ pragma solidity ^0.8.23;
 
 import {Script, console} from "forge-std/Script.sol";
 import {VotingSystem} from "../src/Voting.sol";
-import {Staking} from "../src/Stacking.sol";
+import {Staking} from "../src/Staking.sol";
 import {VoteResultNFT} from "../src/Result_NFT.sol";
 
 contract DeploySepolia is Script {

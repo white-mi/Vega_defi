@@ -14,6 +14,7 @@ contract Staking is ReentrancyGuard {
 
     IERC20Mintable public token;
     mapping(address => Stake[]) public stakes;
+    uint256 public totalVotingPower;
 
     constructor(address _token) {
         token = IERC20Mintable(_token);
@@ -22,10 +23,12 @@ contract Staking is ReentrancyGuard {
     function stake(uint256 amount, uint256 period) external nonReentrant {
         require(period <= 4 * 365 days, "Max 4 years");
         token.transferFrom(msg.sender, address(this), amount);
+        uint256 power = amount * (period ** 2) / 1e18;
+        totalVotingPower += power;
         stakes[msg.sender].push(Stake(amount, block.timestamp, period, false));
     }
 
-    //для простоты проверяю, что человек может вернуть свои стейки по индексам
+    //для простоты проверяю, что человек может вернуть свои стейки по индексам, если прошло время
     //то есть без общей денежной массы
     function unstake(uint256 stakeIndex) external nonReentrant {
         require(stakeIndex < stakes[msg.sender].length, "Invalid index of stake");
@@ -37,6 +40,8 @@ contract Staking is ReentrancyGuard {
         );
         stakeInfo.isWithdrawn = true;
         token.transfer(msg.sender, stakeInfo.amount);
+        uint256 power = stakeInfo.amount * (stakeInfo.period ** 2) / 1e18;
+        totalVotingPower -= power; 
     }
 
     function calculateVotingPower(address user) public view returns (uint256) {
@@ -44,7 +49,7 @@ contract Staking is ReentrancyGuard {
         for (uint256 i = 0; i < stakes[user].length; i++) {
             Stake memory s = stakes[user][i];
             if (!s.isWithdrawn && block.timestamp < s.startTime + s.period) {
-                totalPower += s.amount * (s.period ** 2)/ 1e18;
+                totalPower += (s.amount * (s.startTime + s.period - block.timestamp)** 2)/ 1e18; //деление ~ нормализация
             }
         }
         return totalPower;
@@ -58,5 +63,9 @@ contract Staking is ReentrancyGuard {
         require(stakeIndex < stakes[user].length, "Invalid index of stake");
         Stake memory stakeInfo = stakes[user][stakeIndex];
         return (stakeInfo.amount, stakeInfo.startTime, stakeInfo.period, stakeInfo.isWithdrawn);
+    }
+
+    function getTotalVotingPower() external view returns (uint256) {
+        return totalVotingPower;
     }
 }
