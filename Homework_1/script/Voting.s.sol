@@ -14,7 +14,6 @@ contract DeploySepolia is Script {
         VoteResultNFT nft = new VoteResultNFT(msg.sender);
         Staking staking = new Staking(erc20);
         VotingSystem voting = new VotingSystem(msg.sender,address(staking), address(nft));
-        voting.addAdmin(msg.sender);
 
         vm.stopBroadcast();
     }
