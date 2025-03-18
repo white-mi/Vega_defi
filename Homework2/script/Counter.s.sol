@@ -1,19 +1,26 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.23;
 
-import {Script, console} from "forge-std/Script.sol";
-import {Counter} from "../src/Counter.sol";
+import "forge-std/Script.sol";
+import "../src/StorageContract.sol";
+import "../src/Counter.sol";
 
-contract CounterScript is Script {
-    Counter public counter;
-
-    function setUp() public {}
-
+contract DeployScript is Script {
     function run() public {
-        vm.startBroadcast();
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        address deployer = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        
+        vm.startBroadcast(deployerPrivateKey);
+        CounterV1 v1 = new CounterV1(deployer);
+        CounterV2 v2 = new CounterV2(deployer);
 
-        counter = new Counter();
+        bytes memory initData = abi.encodeWithSignature("initialize()");
+        VersionedProxy proxy = new VersionedProxy(address(v1), initData);
 
         vm.stopBroadcast();
+
+        console.log("CounterV1:", address(v1));
+        console.log("CounterV2:", address(v2));
+        console.log("Proxy:", address(proxy));
     }
 }

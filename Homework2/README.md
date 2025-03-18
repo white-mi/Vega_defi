@@ -1,66 +1,23 @@
-## Foundry
+# Onchain-git
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Проект реализует систему управления версиями смарт-контрактов через UUPS прокси с возможностью отката к предыдущим реализациям. Каждое изменение версии фиксируется в истории, что позволяет безопасно обновлять логику контрактов.  
+Особенности реализации продемонстрированы в тестах (Counter.t.sol).
 
-Foundry consists of:
+## Основные компоненты
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+Система состоит из трёх ключевых контрактов:
 
-## Documentation
+1. **VersionedProxy (Прокси)** - Управление версиями и роутинг вызовов
+2. **CounterV1 (Реализация v1)** - Базовый функционал счетчика
+3. **CounterV2 (Реализация v2)** - Расширенный функционал с reset
 
-https://book.getfoundry.sh/
+## Адреса в локальной сети (Anvil)
 
-## Usage
+```solidity
+// Основные контракты
+address constant COUNTER_V1 = 0x5FbDB2315678afecb367f032d93F642f64180aa3;
+address constant COUNTER_V2 = 0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512;
+address constant PROXY_ADDRESS = 0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0;
 
-### Build
-
-```shell
-$ forge build
-```
-
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+// Аккаунты
+address constant ADMIN = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266; // Владелец прокси
